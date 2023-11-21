@@ -114,11 +114,11 @@ public:
     string UserName;
 
 
-    deposit();
-    withdraw();
-    transfer();
-    AccountCheck();
-    TransferCheck(); break;
+    void deposit();
+    void withdraw();
+    void transfer();
+    void AccountCheck();
+    void TransferCheck();
 }
 
 void User::deposit() {

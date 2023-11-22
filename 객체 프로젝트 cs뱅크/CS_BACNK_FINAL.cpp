@@ -13,7 +13,7 @@ MYSQL_ROW Row;         // 쿼리 성공시 결과로 나온 행의 정보를 담
 int Stat;              // 쿼리 요청 후 결과 (성공, 실패)
 
 
-int g_end = 0;
+int EndCode = 0;
 /////////////////////////////////////////////////로그인 클래스//////////////////////////////////////////
 class Login {
 public:
@@ -203,11 +203,10 @@ void Start::start() {
         cout << "에러 코드 1";
         cout << "로그인에 5회 실패했습니다.";
         cout << "프로그램이 종료됩니다";
-        EndCode = 1; break;
+        EndCode = 1;
     }
     if (MemberNo != 0) {
         //로그인 완료
-        break;
     }
 }
 // 이 함수 메인에서 끌어냈음
@@ -257,9 +256,19 @@ int main() {
         cout << " =========================**cs 제일은행에 오신 걸 환영합니다**=============================\n\n";
         Start customer;
         customer.start();
-        if (g_end == 1) {
-            break;  // 추가: g_end가 1일 경우 루프 탈출
+        if (customer.MemberNo == 0) {
+            customer.start();
+
         }
+        else {
+            User user;
+            user.UserFunction();
+        }
+        if (EndCode == 1) {
+            cout << "프로그램이 종료 됩니다!";
+            return 0;
+        }
+  
     }
 
 

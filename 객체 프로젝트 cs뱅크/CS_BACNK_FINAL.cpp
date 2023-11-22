@@ -2,7 +2,9 @@
 #include <mysql.h>  // 추가: mysql.h 포함
 #include<string>
 #include <sstream> //stringstream 사용을 위한 헤더
-#include <Windows.h> 
+#include <Windows.h>
+#include <cstdlib> // exit 함수를 사용하기 위한 헤더
+
 
 using namespace std;
 
@@ -13,7 +15,7 @@ MYSQL_ROW Row;         // 쿼리 성공시 결과로 나온 행의 정보를 담
 int Stat;              // 쿼리 요청 후 결과 (성공, 실패)
 
 
-int g_end = 0;
+int EndCode = 0;
 /////////////////////////////////////////////////로그인 클래스//////////////////////////////////////////
 class Login {
 public:
@@ -21,33 +23,49 @@ public:
     int missing = 0, error = 0;
     int MemberNo = 0;
 protected:
-    void login() {}
+    void login();
 };
 
-void Login::login() {
+void Login::login() 
+{
     system("cls");
-    cout << "---------------로그인---------------" << "\n";
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    //하늘 색상 출력
+    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+    cout << "\n\n\n";
+    cout << "                            ##        ##        ## ##    ####   ###   ##\n";
+    cout << "                            ##      ##   ##   ##   ##     ##      ##  ##\n";
+    cout << "                            ##      ##   ##   ##          ##     # ## ##\n";
+    cout << "                            ##      ##   ##   ##  ###     ##     ## ##\n";
+    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+    cout << "                            ##      ##   ##   ##   ##     ##     ##  ##\n";
+    cout << "                            ##       ## ##     ##   ##    ##     ##  ##\n";
+    cout << "                            ### ###   ##        ## ##    ####   ###  ##\n";
+
+    SetConsoleTextAttribute(hConsole, 15);
+    cout << "\n\n\n\n";
+
     while (1) {
-        cout << "아이디를 입력하세요. >";
+        cout << "                               아이디를 입력하세요. >";
         cin >> Input_ID;
-        cout << "비밀번호를 입력하세요. >";
+        cout << "                               비밀번호를 입력하세요. >";
         cin >> Input_PW;
         //아이디 비밀번호를 sql에서 확인하는 구문
-        if (1) {
+        if (1)
+        {
             cout << "환영합니다!";
             //MemberNo 변수에 사용자의 키 값을 삽입
             break;
         }
         else {
             missing += 1;
-            cout << "비밀번호가 옳지않습니다.";
-            cout << "현재 비밀번호" << missing << "회 오류입니다.";
+            cout << "비밀번호가 옳지않습니다." << endl;
+            cout << "현재 비밀번호" << missing << "회 오류입니다." << endl;
             if (missing < 5)
             {
-                error = 1;
-                break;
+                exit(0);
             }
-            cout << "로그인 5회 실패시 로그인이 제한됩니다.";
+            cout << "로그인 5회 실패시 로그인이 제한됩니다." << endl;
         }
     }
 
@@ -94,7 +112,7 @@ void SignUp::signup() {
     AcccountNumber = PhoneNumber;
     stringstream AcccountNumber;
     cout << "가입을 진심으로 환영합니다!!!\n";
-    "INSERT INTO `cs_bank`.`customer_table` (`ID`, `Name`, `Phone`, `Password`, `ACCOUNTNUMBER`) VALUES(ID, NAME, PhoneNumber, PW, AcccountNumber)";
+    "INSERT INTO `cs_bank`.`customer_table` (`ID`, `Name`, `PhoneNumber`, `Password`, `ACCOUNTNUMBER`) VALUES(ID, NAME, PhoneNumber, PW, AcccountNumber)";
     int a;
     cin >> a;
 }
@@ -108,18 +126,19 @@ public:
 
 class User : public Start {
 public:
-    int UserMenuNum = 0;    
+    int UserMenuNum = 0;
     void UserFunction();
     //유저의 정보를 받아오는 내용
     string UserName;
 
 
-    deposit();
-    withdraw();
-    transfer();
-    AccountCheck();
-    TransferCheck(); break;
-}
+    void deposit();
+    void withdraw();
+    void transfer();
+    void AccountCheck();
+    void TransferCheck();
+    void displayCustomerTable();
+};
 
 void User::deposit() {
     int InputDeposit;
@@ -143,75 +162,8 @@ void User::AccountCheck() {
 void User::TransferCheck() {
 
 }
-void User::UserFunction() {
-    system("cls");
-    cout << "---------------환영합니다!" << UserName << "님!---------------" << "\n";
-    cout << "1. 예금 입금" << endl;
-    cout << "2. 예금 출금" << endl;
-    cout << "3. 계좌 이체" << endl;
-    cout << "4. 계좌 정보 조회" << endl;
-    cout << "5. 이체 내역 확인" << endl;
-    cout << "6. 로그아웃" << endl;
-    cout << "7. 관리자 기능" << endl;
-    cout << "8. 프로그램 종료" << endl;
-    
-    cin >> UserMenuNum;
 
-    switch (UserMenuNum) {
-    case 1:
-        deposit();  break;
-    case 2:
-        withdraw();  break;
-    case 3:
-        transfer(); break;
-    case 4:
-        AccountCheck(); break;
-    case 5:
-        TransferCheck(); break;
-    case 7:
-        displayCustomerTable(); break; // 사용자에 대한 모든 정보가 들어있는 테이블 호출
-    case 8:
-        EndCode = 1; break;
-    default:
-        system("cls");
-        cout << "잘못된 입력입니다. 다시 입력해주세요.\n";
-        UserFunction();
-    }
-}
-
-void Start::start() {
-
-    cout << "------------------------------------" << "\n";
-    cout << "1. 회원가입" << endl;
-    cout << "2. 로그인" << endl;
-    cout << "3. 종료" << endl;
-    cout << "------------------------------------" << "\n";
-    cin >> StartMenuNum;
-    switch (StartMenuNum) {
-    case 1:
-        signup();  break;
-    case 2:
-        login();  break;
-    case 3:
-        EndCode = 1; break;
-    default:
-        system("cls");
-        cout << "잘못된 입력입니다. 다시 입력해주세요.\n";
-        start();
-    }
-    if (error = 1) {
-        cout << "에러 코드 1";
-        cout << "로그인에 5회 실패했습니다.";
-        cout << "프로그램이 종료됩니다";
-        EndCode = 1; break;
-    }
-    if (MemberNo != 0) {
-        //로그인 완료
-        break;
-    }
-}
-// 이 함수 메인에서 끌어냈음
-void displayCustomerTable()
+void User::displayCustomerTable() 
 {
     // 쿼리 요청
     const char* query = "SELECT * FROM customer_table";
@@ -228,16 +180,96 @@ void displayCustomerTable()
     cout << "Customer Table:\n";
     while ((Row = mysql_fetch_row(Result)) != NULL)
     {
-        cout << "ID: " << Row[0] << ", Name: " << Row[1] << ", Phone: " << Row[2] << ", Password: " << Row[3] << ", ACCOUNTNUMBER: " << Row[4] << "\n";
+        cout << "ID: " << Row[0] << ", Name: " << Row[1] << ", PhoneNumber: " << Row[2] << ", Password: " << Row[3] << ", ACCOUNTNUMBER: " << Row[4] << "\n";
     }
-
-   
 }
+
+void User::UserFunction() {
+    system("cls");
+    cout << "---------------환영합니다!" << UserName << "님!---------------" << "\n";
+    cout << "1. 예금 입금" << endl;
+    cout << "2. 예금 출금" << endl;
+    cout << "3. 계좌 이체" << endl;
+    cout << "4. 계좌 정보 조회" << endl;
+    cout << "5. 이체 내역 확인" << endl;
+    cout << "6. 로그아웃" << endl;
+    cout << "7. 관리자 기능" << endl;
+    cout << "8. 프로그램 종료" << endl;
+
+    cin >> UserMenuNum;
+
+    switch (UserMenuNum) {
+    case 1:
+        deposit();  break;
+    case 2:
+        withdraw();  break;
+    case 3:
+        transfer(); break;
+    case 4:
+        AccountCheck(); break;
+    case 5:
+        TransferCheck(); break;
+    case 7:
+        displayCustomerTable(); break; // 사용자에 대한 모든 정보가 들어있는 테이블 호출
+    case 8:
+        exit(0);
+    default:
+        system("cls");
+        cout << "잘못된 입력입니다. 다시 입력해주세요.\n";
+        UserFunction();
+    }
+}
+
+void Start::start() {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    cout << "\n";
+    cout << "                                 □□□□□□□□□□□□□□□□□□\n";
+    cout << "                                 □                                □\n";
+    cout << "                                 □                                □\n";
+    cout << "                                 □        ";
+    SetConsoleTextAttribute(hConsole, 12);
+    cout << "기능을 입력하세요";
+    SetConsoleTextAttribute(hConsole, 15);
+    cout << "       □\n";
+    cout << "                                 □                                □\n";
+    cout << "                                 □                                □\n";
+    cout << "                                 □           1. 로그인            □\n";
+    cout << "                                 □                                □\n";
+    cout << "                                 □          2. 회원가입           □\n";
+    cout << "                                 □                                □\n";
+    cout << "                                 □            3. 종료             □\n";
+    cout << "                                 □                                □\n";
+    cout << "                                 □                                □\n";
+    cout << "                                 □□□□□□□□□□□□□□□□□□\n";
+    cin >> StartMenuNum;
+    switch (StartMenuNum) {
+    case 1:
+        login();  break;
+    case 2:
+        signup();  break;
+    case 3:
+        exit(0); // 프로그램 종료
+    default:
+        system("cls");
+        cout << "잘못된 입력입니다. 다시 입력해주세요.\n";
+        start();
+    }
+    if (error = 1) {
+        cout << "에러 코드 1";
+        cout << "로그인에 5회 실패했습니다.";
+        cout << "프로그램이 종료됩니다";
+        EndCode = 1;
+    }
+    if (MemberNo != 0) {
+        //로그인 완료
+    }
+}
+
 
 //////////////////////////////////////MYSQL 연결 + MAIN 시작//////////////////////////////////////
 
 int main() {
-   
+
     mysql_init(&Conn); // MySQL 정보 초기화
 
     // 데이터베이스와 연결
@@ -250,22 +282,55 @@ int main() {
     }
 
 
+    // 쿼리 요청
+
+
+    //콘솔창 크기 및 색상 불러오기
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    system("mode con: cols=100 lines=100");
 
     //////////////////////////////////////은행 구문 시작//////////////////////////////////////
     while (1)
     {
-        cout << " =========================**cs 제일은행에 오신 걸 환영합니다**=============================\n\n";
+
+        system("cls");
+
+
+       
+            
+
+        //하늘 색상 출력
+        SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+        cout << "\n\n\n";
+        cout << " 	         	 ######   ######     ########     ###    ##    ## ##    ##                 \n";
+        cout << " 	         	##    ## ##    ##    ##     ##   ## ##   ###   ## ##   ##                  \n";
+        cout << " 	         	##       ##          ##     ##  ##   ##  ####  ## ##  ##                   \n";
+        cout << " 	         	##        ######     ########  ##     ## ## ## ## #####                    \n";
+        cout << " 	         	##             ##    ##     ## ######### ##  #### ##  ##                   \n";
+        //초록 색상 출력
+        SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+        cout << " 	        	##    ## ##    ##    ##     ## ##     ## ##   ### ##   ##                  \n";
+        cout << " 	        	 ######   ######     ########  ##     ## ##    ## ##    ##                 \n";
+        cout << "\n\n\n\n";
+        //검정 색상 출력
+        SetConsoleTextAttribute(hConsole, 15);
+        cout << "                                  CS제일은행에 오신것을 환영합니다!                                 \n\n\n\n";
         Start customer;
         customer.start();
-        if (g_end == 1) {
-            break;  // 추가: g_end가 1일 경우 루프 탈출
+        if (customer.MemberNo == 0) {
+            customer.start();
+
         }
+        else {
+            User user;
+            user.UserFunction();
+        }
+        if (EndCode == 1) {
+            cout << "프로그램이 종료 됩니다!";
+            return 0;
+        }
+
     }
-
-
-
-
-
 
 
     mysql_free_result(Result);// MySQL C API에서 사용한 메모리를 해제하는 함수

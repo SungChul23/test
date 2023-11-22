@@ -3,6 +3,16 @@
 #include <stdlib.h>
 using namespace std;
 
+class Login {
+public:
+	string Input_ID, Input_PW;
+	int missing = 0, error = 0;
+	int MemberNo = 0;
+protected:
+	void login() {}
+};
+
+
 int main() {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	system("mode con: cols=100 lines=35");

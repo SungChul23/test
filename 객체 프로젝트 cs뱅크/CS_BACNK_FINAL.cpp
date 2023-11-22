@@ -5,7 +5,6 @@
 #include <Windows.h>
 #include <cstdlib> // exit 함수를 사용하기 위한 헤더
 
-
 using namespace std;
 
 MYSQL Conn;           // MySQL 정보 담을 구조체
@@ -15,7 +14,7 @@ MYSQL_ROW Row;         // 쿼리 성공시 결과로 나온 행의 정보를 담
 int Stat;              // 쿼리 요청 후 결과 (성공, 실패)
 
 
-int EndCode = 0;
+
 /////////////////////////////////////////////////로그인 클래스//////////////////////////////////////////
 class Login {
 public:
@@ -28,6 +27,17 @@ protected:
 
 void Login::login() 
 {
+    mysql_init(&Conn); // MySQL 정보 초기화
+
+    // 데이터베이스와 연결
+    ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "0923", "cs_bank", 3306, (char*)NULL, 0);
+
+    // 연결 결과 확인. null일 경우 실패
+    if (ConnPtr == NULL) {
+        fprintf(stderr, "Mysql query error:%s", mysql_error(&Conn));
+        return;
+    }
+
     system("cls");
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     //하늘 색상 출력
@@ -45,31 +55,65 @@ void Login::login()
     SetConsoleTextAttribute(hConsole, 15);
     cout << "\n\n\n\n";
 
-    while (1) {
-        cout << "                               아이디를 입력하세요. >";
+    while (1)
+    {
+        cout << "\n";
+        cout << "아이디를 입력하세요. >";
         cin >> Input_ID;
-        cout << "                               비밀번호를 입력하세요. >";
+        cout << "비밀번호를 입력하세요. >";
         cin >> Input_PW;
-        //아이디 비밀번호를 sql에서 확인하는 구문
-        if (1)
-        {
-            cout << "환영합니다!";
-            //MemberNo 변수에 사용자의 키 값을 삽입
-            break;
+
+        // SQL 쿼리를 준비
+        string query = "SELECT * FROM customer_table WHERE ID = '" + Input_ID + "' AND password = '" + Input_PW + "'";
+
+        // SQL 쿼리를 실행
+        if (mysql_query(&Conn, query.c_str()) == 0) {
+            MYSQL_RES* result = mysql_store_result(&Conn);
+            if (result) {
+                MYSQL_ROW row = mysql_fetch_row(result);
+                if (row) {
+                    // ㄱ로그인 성공
+                    cout << "환영합니다!";
+                    // MemberNo 변수에 사용자의 키 값을 삽입
+                    // ...
+
+                    // 결과 세트 해체
+                    mysql_free_result(result);
+
+                    break;
+                }
+                else {
+                    // 비밀번호 실패 최대 5번 가능
+                    missing += 1;
+                    cout << "비밀번호가 옳지않습니다." << endl;
+                    cout << "현재 비밀번호" << missing << "회 오류입니다."<< endl;
+                    if (missing < 5) {
+                        continue;
+                        
+                    }
+                    cout << "로그인 5회 실패시 로그인이 제한됩니다."<< endl;
+
+                    //결과 세트 해체
+                    mysql_free_result(result);
+
+                    //프로그램 종료
+                    exit(0);
+                }
+            }
         }
         else {
-            missing += 1;
-            cout << "비밀번호가 옳지않습니다." << endl;
-            cout << "현재 비밀번호" << missing << "회 오류입니다." << endl;
-            if (missing < 5)
-            {
-                exit(0);
-            }
-            cout << "로그인 5회 실패시 로그인이 제한됩니다." << endl;
+            // 쿼리 실행중 오류 발생
+            cout << "SQL query error: " << mysql_error(&Conn);
         }
     }
 
+    // MYSQL과 연결 해체
+    mysql_close(&Conn);
 }
+
+
+
+
 ////////////////////////////////////////////////회원기입 클래스//////////////////////////////////////////
 class SignUp {
 public:
@@ -112,7 +156,7 @@ void SignUp::signup() {
     AcccountNumber = PhoneNumber;
     stringstream AcccountNumber;
     cout << "가입을 진심으로 환영합니다!!!\n";
-    "INSERT INTO `cs_bank`.`customer_table` (`ID`, `Name`, `PhoneNumber`, `Password`, `ACCOUNTNUMBER`) VALUES(ID, NAME, PhoneNumber, PW, AcccountNumber)";
+    "INSERT INTO `cs_bank`.`customer_table` (`ID`, `Name`, `Phone`, `Password`, `ACCOUNTNUMBER`) VALUES(ID, NAME, PhoneNumber, PW, AcccountNumber)";
     int a;
     cin >> a;
 }
@@ -163,8 +207,7 @@ void User::TransferCheck() {
 
 }
 
-void User::displayCustomerTable() 
-{
+void User::displayCustomerTable() {
     // 쿼리 요청
     const char* query = "SELECT * FROM customer_table";
     Stat = mysql_query(ConnPtr, query);
@@ -180,7 +223,7 @@ void User::displayCustomerTable()
     cout << "Customer Table:\n";
     while ((Row = mysql_fetch_row(Result)) != NULL)
     {
-        cout << "ID: " << Row[0] << ", Name: " << Row[1] << ", PhoneNumber: " << Row[2] << ", Password: " << Row[3] << ", ACCOUNTNUMBER: " << Row[4] << "\n";
+        cout << "ID: " << Row[0] << ", Name: " << Row[1] << ", Phone: " << Row[2] << ", Password: " << Row[3] << ", ACCOUNTNUMBER: " << Row[4] << "\n";
     }
 }
 
@@ -212,6 +255,7 @@ void User::UserFunction() {
     case 7:
         displayCustomerTable(); break; // 사용자에 대한 모든 정보가 들어있는 테이블 호출
     case 8:
+        cout << "프로그을 종료합니다" << endl;
         exit(0);
     default:
         system("cls");
@@ -248,18 +292,13 @@ void Start::start() {
     case 2:
         signup();  break;
     case 3:
-        exit(0); // 프로그램 종료
+        cout << "프로그램을 종료합니다" << endl;
     default:
         system("cls");
         cout << "잘못된 입력입니다. 다시 입력해주세요.\n";
         start();
     }
-    if (error = 1) {
-        cout << "에러 코드 1";
-        cout << "로그인에 5회 실패했습니다.";
-        cout << "프로그램이 종료됩니다";
-        EndCode = 1;
-    }
+
     if (MemberNo != 0) {
         //로그인 완료
     }
@@ -281,10 +320,6 @@ int main() {
         return 1;
     }
 
-
-    // 쿼리 요청
-
-
     //콘솔창 크기 및 색상 불러오기
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     system("mode con: cols=100 lines=100");
@@ -292,13 +327,7 @@ int main() {
     //////////////////////////////////////은행 구문 시작//////////////////////////////////////
     while (1)
     {
-
         system("cls");
-
-
-       
-            
-
         //하늘 색상 출력
         SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
         cout << "\n\n\n";
@@ -325,12 +354,14 @@ int main() {
             User user;
             user.UserFunction();
         }
-        if (EndCode == 1) {
-            cout << "프로그램이 종료 됩니다!";
-            return 0;
-        }
+  
 
     }
+
+
+
+
+
 
 
     mysql_free_result(Result);// MySQL C API에서 사용한 메모리를 해제하는 함수

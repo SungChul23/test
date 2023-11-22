@@ -31,20 +31,21 @@ void Login::login() {
     //하늘 색상 출력
     SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
     cout << "\n\n\n";
-    cout << "        ##        ##        ## ##    ####   ###   ##\n";
-    cout << "        ##      ##   ##   ##   ##     ##      ##  ##\n";
-    cout << "        ##      ##   ##   ##          ##     # ## ##\n";
-    cout << "        ##      ##   ##   ##  ###     ##     ## ##\n";
+    cout << "                            ##        ##        ## ##    ####   ###   ##\n";
+    cout << "                            ##      ##   ##   ##   ##     ##      ##  ##\n";
+    cout << "                            ##      ##   ##   ##          ##     # ## ##\n";
+    cout << "                            ##      ##   ##   ##  ###     ##     ## ##\n";
     SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
-    cout << "        ##      ##   ##   ##   ##     ##     ##  ##\n";
-    cout << "        ##       ## ##     ##   ##    ##     ##  ##\n";
-    cout << "        ### ###   ##        ## ##    ####   ###  ##\n";
+    cout << "                            ##      ##   ##   ##   ##     ##     ##  ##\n";
+    cout << "                            ##       ## ##     ##   ##    ##     ##  ##\n";
+    cout << "                            ### ###   ##        ## ##    ####   ###  ##\n";
 
     SetConsoleTextAttribute(hConsole, 15);
+    cout << "\n\n\n\n";
     while (1) {
-        cout << "아이디를 입력하세요. >";
+        cout << "                               아이디를 입력하세요. >";
         cin >> Input_ID;
-        cout << "비밀번호를 입력하세요. >";
+        cout << "                               비밀번호를 입력하세요. >";
         cin >> Input_PW;
         //아이디 비밀번호를 sql에서 확인하는 구문
         if (1) {
@@ -290,6 +291,7 @@ int main() {
     //////////////////////////////////////은행 구문 시작//////////////////////////////////////
     while (1)
     {
+        system("cls");
         //하늘 색상 출력
         SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
         cout << "\n\n\n";

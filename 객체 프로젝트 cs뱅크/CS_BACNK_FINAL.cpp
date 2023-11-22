@@ -35,10 +35,12 @@ void Login::login() {
     cout << "        ##      ##   ##   ##   ##     ##      ##  ##\n";
     cout << "        ##      ##   ##   ##          ##     # ## ##\n";
     cout << "        ##      ##   ##   ##  ###     ##     ## ##\n";
+    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
     cout << "        ##      ##   ##   ##   ##     ##     ##  ##\n";
     cout << "        ##       ## ##     ##   ##    ##     ##  ##\n";
     cout << "        ### ###   ##        ## ##    ####   ###  ##\n";
-    cout << "---------------로그인---------------" << "\n";
+
+    SetConsoleTextAttribute(hConsole, 15);
     while (1) {
         cout << "아이디를 입력하세요. >";
         cin >> Input_ID;

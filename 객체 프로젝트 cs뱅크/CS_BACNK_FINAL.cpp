@@ -27,6 +27,17 @@ protected:
 
 void Login::login() {
     system("cls");
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    //하늘 색상 출력
+    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+    cout << "\n\n\n";
+    cout << "        ##        ##        ## ##    ####   ###   ##\n";
+    cout << "        ##      ##   ##   ##   ##     ##      ##  ##\n";
+    cout << "        ##      ##   ##   ##          ##     # ## ##\n";
+    cout << "        ##      ##   ##   ##  ###     ##     ## ##\n";
+    cout << "        ##      ##   ##   ##   ##     ##     ##  ##\n";
+    cout << "        ##       ## ##     ##   ##    ##     ##  ##\n";
+    cout << "        ### ###   ##        ## ##    ####   ###  ##\n";
     cout << "---------------로그인---------------" << "\n";
     while (1) {
         cout << "아이디를 입력하세요. >";

@@ -4,7 +4,7 @@
 #include <sstream> //stringstream 사용을 위한 헤더
 #include <Windows.h>
 #include <cstdlib> // exit 함수를 사용하기 위한 헤더
- 
+
 using namespace std;
 
 MYSQL Conn;           // MySQL 정보 담을 구조체
@@ -254,25 +254,33 @@ public:
 
 };
 void User::GetUserInfo() {
-    string whoLoginquery = "SELECT ID,Name,PhoneNumber,Password,ACCOUNTNUMBER FROM cs_bank.customer_table WHERE No = '" + MemberNo + "'";
-    if (mysql_query(&Conn, whoLoginquery.c_str()) == 0) {
-        MYSQL_RES* result = mysql_store_result(&Conn);
-        if (result != NULL) {
-            MYSQL_ROW row = mysql_fetch_row(result);
-            if (row != NULL) {
-                UserId = row[0];
-                cout << UserId << "유저 아이디" << endl;
-                Sleep(1000);
-                UserName = row[1];
-                UserPhone = row[2];
-                UserPassword = row[3];
-                UserAccountNumber = row[4];
-                Money = row[5];
+    <<<<<< < Updated upstream
+        string whoLoginquery = "SELECT ID,Name,PhoneNumber,Password,ACCOUNTNUMBER FROM cs_bank.customer_table WHERE No = '" + MemberNo + "'";
+    ====== =
+        string whoLoginquery = "SELECT ID,Name,Phone,Password,ACCOUNTNUMBER,Money FROM cs_bank.customer_table WHERE No = '" + MemberNo + "'";
+    >>>>>> > Stashed changes
+        if (mysql_query(&Conn, whoLoginquery.c_str()) == 0) {
+            MYSQL_RES* result = mysql_store_result(&Conn);
+            if (result != NULL) {
+                MYSQL_ROW row = mysql_fetch_row(result);
+                if (row != NULL) {
+                    UserId = row[0];
+                    cout << UserId << "유저 아이디" << endl;
+                    <<<<<< < Updated upstream
+                        Sleep(1000);
+                    ====== =
+                        Sleep(5000);
+                    >>>>>> > Stashed changes
+                        UserName = row[1];
+                    UserPhone = row[2];
+                    UserPassword = row[3];
+                    UserAccountNumber = row[4];
+                    Money = row[5];
+                }
             }
+            // 결과 세트 해체
+            mysql_free_result(result);
         }
-        // 결과 세트 해체
-        mysql_free_result(result);
-    }
 }
 void User::deposit() {
     int InputDeposit;
@@ -320,6 +328,17 @@ void User::checkmyInfo() {
     Sleep(3000);
 }
 
+void User::checkmyInfo() {
+    //UserId, UserName, UserPhone, UserPassword, UserAccountNumber
+    cout << "ID :" << UserId << endl;
+    cout << "이름 :" << UserName << endl;
+    cout << "전화번호 :" << UserPhone << endl;
+    cout << "비밀번호 :" << UserPassword << endl;
+    cout << "계좌 번호 :" << UserAccountNumber << endl;
+    cout << "잔액  :" << Money << endl;
+    Sleep(3000);
+}
+
 void User::displayCustomerTable() {
     // 쿼리 요청
     const char* query = "SELECT * FROM customer_table";
@@ -343,11 +362,17 @@ void User::displayCustomerTable() {
 
 void User::UserFunction() {
     system("cls");
-    
-    GetUserInfo();
+    <<<<<< < Updated upstream
+
+        GetUserInfo();
     //cout << MemberNo << endl;
     //cout << UserId << endl;
-    cout << "---------------환영합니다!" << UserName << "님!---------------" << "\n";
+    ====== =
+        GetUserInfo();
+    cout << MemberNo << endl;
+    cout << UserId << endl;
+    >>>>>> > Stashed changes
+        cout << "---------------환영합니다!" << UserName << "님!---------------" << "\n";
     cout << "1. 예금 입금" << endl;
     cout << "2. 예금 출금" << endl;
     cout << "3. 계좌 이체" << endl;
@@ -391,6 +416,8 @@ void User::UserFunction() {
     case 7:
         cout << "프로그램을 종료합니다" << endl; // 프로그램 종료 
         exit(0);
+    case 9:
+        checkmyInfo(); break;
     default:
         system("cls");
         cout << "잘못된 입력입니다. 다시 입력해주세요.\n";
@@ -469,15 +496,15 @@ int main() {
         //하늘 색상 출력
         SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
         cout << "\n\n\n";
-        cout << " 	         	 ######   ######     ########     ###    ##    ## ##    ##                 \n";
-        cout << " 	         	##    ## ##    ##    ##     ##   ## ##   ###   ## ##   ##                  \n";
-        cout << " 	         	##       ##          ##     ##  ##   ##  ####  ## ##  ##                   \n";
-        cout << " 	         	##        ######     ########  ##     ## ## ## ## #####                    \n";
-        cout << " 	         	##             ##    ##     ## ######### ##  #### ##  ##                   \n";
+        cout << "                 ######   ######     ########     ###    ##    ## ##    ##                 \n";
+        cout << "                ##    ## ##    ##    ##     ##   ## ##   ###   ## ##   ##                  \n";
+        cout << "                ##       ##          ##     ##  ##   ##  ####  ## ##  ##                   \n";
+        cout << "                ##        ######     ########  ##     ## ## ## ## #####                    \n";
+        cout << "                ##             ##    ##     ## ######### ##  #### ##  ##                   \n";
         //초록 색상 출력
         SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
-        cout << " 	        	##    ## ##    ##    ##     ## ##     ## ##   ### ##   ##                  \n";
-        cout << " 	        	 ######   ######     ########  ##     ## ##    ## ##    ##                 \n";
+        cout << "               ##    ## ##    ##    ##     ## ##     ## ##   ### ##   ##                  \n";
+        cout << "                ######   ######     ########  ##     ## ##    ## ##    ##                 \n";
         cout << "\n\n\n\n";
         //검정 색상 출력
         SetConsoleTextAttribute(hConsole, 15);
@@ -491,7 +518,11 @@ int main() {
                 user.UserFunction();
             }
         }
+        <<<<<<< Updated upstream
 
+            ====== =
+
+            >>>>>> > Stashed changes
 
     }
 

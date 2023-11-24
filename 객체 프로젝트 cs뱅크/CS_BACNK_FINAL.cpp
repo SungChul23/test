@@ -29,7 +29,7 @@ void Login::login()
     mysql_init(&Conn); // MySQL 정보 초기화
 
     // 데이터베이스와 연결
-    ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "0923", "cs_bank", 3306, (char*)NULL, 0);
+    ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "1q2w3e4r!", "cs_bank", 3306, (char*)NULL, 0);
 
     // 연결 결과 확인. null일 경우 실패
     if (ConnPtr == NULL) {
@@ -145,7 +145,7 @@ void SignUp::signup() {
     mysql_init(&Conn); // MySQL 정보 초기화
 
     // 데이터베이스와 연결
-    MYSQL* ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "0923", "cs_bank", 3306, (char*)NULL, 0);
+    MYSQL* ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "1q2w3e4r!", "cs_bank", 3306, (char*)NULL, 0);
 
     // 연결 결과 확인. null일 경우 실패
     if (ConnPtr == NULL) {
@@ -254,33 +254,24 @@ public:
 
 };
 void User::GetUserInfo() {
-    <<<<<< < Updated upstream
-        string whoLoginquery = "SELECT ID,Name,PhoneNumber,Password,ACCOUNTNUMBER FROM cs_bank.customer_table WHERE No = '" + MemberNo + "'";
-    ====== =
-        string whoLoginquery = "SELECT ID,Name,Phone,Password,ACCOUNTNUMBER,Money FROM cs_bank.customer_table WHERE No = '" + MemberNo + "'";
-    >>>>>> > Stashed changes
-        if (mysql_query(&Conn, whoLoginquery.c_str()) == 0) {
-            MYSQL_RES* result = mysql_store_result(&Conn);
-            if (result != NULL) {
-                MYSQL_ROW row = mysql_fetch_row(result);
-                if (row != NULL) {
-                    UserId = row[0];
-                    cout << UserId << "유저 아이디" << endl;
-                    <<<<<< < Updated upstream
-                        Sleep(1000);
-                    ====== =
-                        Sleep(5000);
-                    >>>>>> > Stashed changes
-                        UserName = row[1];
-                    UserPhone = row[2];
-                    UserPassword = row[3];
-                    UserAccountNumber = row[4];
-                    Money = row[5];
-                }
+
+    string whoLoginquery = "SELECT ID,Name,Phone,Password,ACCOUNTNUMBER,Money FROM cs_bank.customer_table WHERE No = '" + MemberNo + "'";
+    if (mysql_query(&Conn, whoLoginquery.c_str()) == 0) {
+        MYSQL_RES* result = mysql_store_result(&Conn);
+        if (result != NULL) {
+            MYSQL_ROW row = mysql_fetch_row(result);
+            if (row != NULL) {
+                UserId = row[0];
+                UserName = row[1];
+                UserPhone = row[2];
+                UserPassword = row[3];
+                UserAccountNumber = row[4];
+                Money = row[5];
             }
-            // 결과 세트 해체
-            mysql_free_result(result);
         }
+        // 결과 세트 해체
+        mysql_free_result(result);
+    }
 }
 void User::deposit() {
     int InputDeposit;
@@ -328,16 +319,6 @@ void User::checkmyInfo() {
     Sleep(3000);
 }
 
-void User::checkmyInfo() {
-    //UserId, UserName, UserPhone, UserPassword, UserAccountNumber
-    cout << "ID :" << UserId << endl;
-    cout << "이름 :" << UserName << endl;
-    cout << "전화번호 :" << UserPhone << endl;
-    cout << "비밀번호 :" << UserPassword << endl;
-    cout << "계좌 번호 :" << UserAccountNumber << endl;
-    cout << "잔액  :" << Money << endl;
-    Sleep(3000);
-}
 
 void User::displayCustomerTable() {
     // 쿼리 요청
@@ -362,16 +343,6 @@ void User::displayCustomerTable() {
 
 void User::UserFunction() {
     system("cls");
-    <<<<<< < Updated upstream
-
-        GetUserInfo();
-    //cout << MemberNo << endl;
-    //cout << UserId << endl;
-    ====== =
-        GetUserInfo();
-    cout << MemberNo << endl;
-    cout << UserId << endl;
-    >>>>>> > Stashed changes
         cout << "---------------환영합니다!" << UserName << "님!---------------" << "\n";
     cout << "1. 예금 입금" << endl;
     cout << "2. 예금 출금" << endl;
@@ -477,7 +448,7 @@ int main() {
     mysql_init(&Conn); // MySQL 정보 초기화
 
     // 데이터베이스와 연결
-    ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "0923", "cs_bank", 3306, (char*)NULL, 0);
+    ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "1q2w3e4r!", "cs_bank", 3306, (char*)NULL, 0);
 
     // 연결 결과 확인. null일 경우 실패
     if (ConnPtr == NULL) {
@@ -518,11 +489,7 @@ int main() {
                 user.UserFunction();
             }
         }
-        <<<<<<< Updated upstream
-
-            ====== =
-
-            >>>>>> > Stashed changes
+        
 
     }
 

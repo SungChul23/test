@@ -4,7 +4,7 @@
 #include <sstream> //stringstream 사용을 위한 헤더
 #include <Windows.h>
 #include <cstdlib> // exit 함수를 사용하기 위한 헤더
-
+ 
 using namespace std;
 
 MYSQL Conn;           // MySQL 정보 담을 구조체

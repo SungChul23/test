@@ -4,6 +4,7 @@
 #include <sstream> //stringstream 사용을 위한 헤더
 #include <Windows.h>
 #include <cstdlib> // exit 함수를 사용하기 위한 헤더
+#include <ctime> //랜덤을 위한 헤더
 
 using namespace std;
 
@@ -128,7 +129,7 @@ void Login::login()
 
 
 
-////////////////////////////////////////////////회원기입 클래스//////////////////////////////////////////
+////////////////////////////////////////////////회원가입 클래스//////////////////////////////////////////
 class SignUp {
 public:
     string ID, PW, NAME;
@@ -190,17 +191,6 @@ void SignUp::signup() {
         cout << "사용하실 비밀번호를 입력하세요. (숫자 4자리) >> ";
         cin >> PW;
 
-        // 비밀번호 중복체크
-        string pwCheckQuery = "SELECT ID FROM customer_table WHERE Password = '" + PW + "'";
-        mysql_query(&Conn, pwCheckQuery.c_str());
-        MYSQL_RES* pwCheckResult = mysql_store_result(&Conn);
-
-        if (mysql_num_rows(pwCheckResult) == 0) {
-            mysql_free_result(pwCheckResult);
-            break;
-        }
-        cout << "이미 존재하는 비밀번호 입니다!\n";
-
         // 두 번 입력
         cout << "\n";
         cout << "비밀번호를 다시 입력하세요. >> ";
@@ -210,24 +200,38 @@ void SignUp::signup() {
         if (PW == confirmPW) {
             break;
         }
-
         cout << "비밀번호가 일치하지 않습니다. 다시 입력해주세요.\n";
     }
 
-    cout << "고객님의 계좌 번호는 " << PhoneNumber << "0 입니다!\n";
-    AcccountNumber = to_string(PhoneNumber) + "0";
     cout << "가입을 진심으로 환영합니다!!!\n";
-
+    Sleep(3000);
+    //가입 인원 판별 및 No값 삽입
+    int No=0;
+    string AccountCountQuery = "SELECT COUNT(*) FROM customer_table";
+    if (mysql_query(&Conn, AccountCountQuery.c_str()) != 0) {
+        fprintf(stderr, "SQL 문 실행 오류: %s\n", mysql_error(&Conn));
+    }
+    else {
+        MYSQL_RES* result = mysql_use_result(&Conn);
+        MYSQL_ROW row = mysql_fetch_row(result);
+        if (row != NULL) {
+            if (row != NULL) {
+                No = atoi(row[0]);
+            }
+            mysql_free_result(result);
+        }
+    }
+    //가입 인원 +1 =No
+    No += 1;
     // 회원 정보를 데이터베이스에 삽입하기 위한 SQL 쿼리 생성 및 실행
-    string insertQuery = "INSERT INTO `cs_bank`.`customer_table` (`ID`, `Name`, `PhoneNumber`, `Password`, `ACCOUNTNUMBER`) VALUES ('"
-        + ID + "', '" + NAME + "', '" + to_string(PhoneNumber) + "', '" + PW + "', '" + AcccountNumber + "')";
+    string insertQuery = "INSERT INTO `cs_bank`.`customer_table` (`No`, `ID`, `Name`, `Phone`, `Password`) VALUES ('" + to_string(No) + "','" + ID + "', '" + NAME + "',   '" + to_string(PhoneNumber) + "'  , '" + PW + "')";
 
     if (mysql_query(&Conn, insertQuery.c_str()) != 0) {
         fprintf(stderr, "Mysql query error:%s", mysql_error(&Conn));
     }
 
     // MySQL 연결 해제
-    // mysql_close(&Conn);
+    //mysql_close(&Conn);
 }
 
 ////////////////////////////////스타트 클래스/////////////////////
@@ -240,39 +244,122 @@ public:
 
 class User : public Start {
 private:
-    string UserId, UserName, UserPhone, UserPassword, UserAccountNumber, Money;
+    string ID, Name, Phone, Password;
 public:
     int UserMenuNum = 0;
     void UserFunction();
     //유저의 정보를 받아오는 내용
     void GetUserInfo();
+    //계좌 개설
+    void OpenAccount();
+    //계좌 여부 확인
+    void IsHaveAccount();
+    //입금
     void deposit();
+    //출금
     void withdraw();
+    //계좌이체
     void transfer();
+    //관리자 - 모든 테이블 확인
     void displayCustomerTable();
+    //사용자 - 본인 정보 확인
     void checkmyInfo();
 
 };
 void User::GetUserInfo() {
-
-    string whoLoginquery = "SELECT ID,Name,Phone,Password,ACCOUNTNUMBER,Money FROM cs_bank.customer_table WHERE No = '" + MemberNo + "'";
+    string whoLoginquery = "SELECT ID,Name,Phone FROM cs_bank.customer_table WHERE No = '" + MemberNo + "'";
     if (mysql_query(&Conn, whoLoginquery.c_str()) == 0) {
         MYSQL_RES* result = mysql_store_result(&Conn);
         if (result != NULL) {
             MYSQL_ROW row = mysql_fetch_row(result);
             if (row != NULL) {
-                UserId = row[0];
-                UserName = row[1];
-                UserPhone = row[2];
-                UserPassword = row[3];
-                UserAccountNumber = row[4];
-                Money = row[5];
+                ID = row[0];
+                Name = row[1];
+                Phone = row[2];
+                Password = row[3];
             }
         }
         // 결과 세트 해체
         mysql_free_result(result);
     }
 }
+
+void User::OpenAccount() {
+    string CheckPhone;
+    string agree;
+    cout << "계좌 개설 페이지입니다.\n";
+    cout << "본인 확인을 위해 전화번호를 입력하세요.\n";
+    cin >> CheckPhone;
+
+    if (Phone != CheckPhone) {
+        cout << "본인 확인에 실패했습니다.\n";
+        cout << "관리자에게 문의바랍니다. \n";
+        Sleep(2000);
+        UserFunction();
+    }
+    cout << "본인 확인이 되었습니다.\n";
+
+    cout << "보이스피싱 등 전기 통신 금융사기가 급증함에 따라, 고객님의 금융사기 피해를 사전에 예방하고 소중한 자산을 보호하고자 합니다.";
+    cout << "계좌 개설 목적이 본인 사용이 맞으신가요?\n< Yes / NO >\n";
+    cin >> agree;
+    if (agree == "No" || agree == "NO") {
+        cout << "관리자에게 문의바랍니다. \n";
+        Sleep(2000);
+        UserFunction();
+    }
+
+    int randomNumber = 0;
+
+    while (1) {
+        //계좌번호 랜덤 생성
+        srand(time(NULL));
+        randomNumber= 10000000 + rand() % (99999999 - 10000000 + 1);
+        //계좌번호 중복 확인
+        string AccountCheckQuery = "SELECT ID FROM account_table WHERE ID = '" + to_string(randomNumber) + "'";
+        mysql_query(&Conn, AccountCheckQuery.c_str());
+        MYSQL_RES* idCheckResult = mysql_store_result(&Conn);
+        if (mysql_num_rows(idCheckResult) == 0) {
+            mysql_free_result(idCheckResult);
+            cout << "고객님의 계좌번호는" << randomNumber << "입니다.\n";
+            break;
+        }
+    }
+    Sleep(3000);
+    string AccountCountQuery = "SELECT COUNT(*) FROM account_table";
+    int accountCount;
+    if (mysql_query(&Conn, AccountCountQuery.c_str()) != 0) {
+        fprintf(stderr, "SQL 문 실행 오류: %s\n", mysql_error(&Conn));
+    }
+    else {
+        MYSQL_RES* result = mysql_use_result(&Conn);
+        MYSQL_ROW row = mysql_fetch_row(result);
+        if (row != NULL) {
+            if (row != NULL) {
+                accountCount = atoi(row[0]);
+            }
+            mysql_free_result(result);
+        }
+    }
+
+    //계좌 개수 +1
+    accountCount += 1;
+    //계좌 이름
+    string accountName="cs제일계좌";
+    accountName += to_string(accountCount);
+    // 회원 정보를 데이터베이스에 삽입하기 위한 SQL 쿼리 생성 및 실행
+    string insertQuery = "INSERT INTO `cs_bank`.`account_table` (`ID`, `AccountName`, `AccountNumber`, `Balance`) VALUES ('" + ID + "', '" + accountName + "',   '" + to_string(randomNumber) + "'  , '" + to_string(0) + "')";
+    if (mysql_query(&Conn, insertQuery.c_str()) != 0) {
+        fprintf(stderr, "Mysql query error:%s", mysql_error(&Conn));
+    }
+
+    cout << "계좌 개설을 축하합니다";
+    Sleep(3000);
+}
+
+void User::IsHaveAccount() {
+
+}
+
 void User::deposit() {
     int InputDeposit;
     cout << "입금 하실 금액을 입력하세요. >> ";
@@ -310,12 +397,10 @@ void User::transfer() {
 
 void User::checkmyInfo() {
     //UserId, UserName, UserPhone, UserPassword, UserAccountNumber
-    cout << "ID :" << UserId << endl;
-    cout << "이름 :" << UserName << endl;
-    cout << "전화번호 :" << UserPhone << endl;
-    cout << "비밀번호 :" << UserPassword << endl;
-    cout << "계좌 번호 :" << UserAccountNumber << endl;
-    cout << "잔액  :" << Money << endl;
+    cout << "ID :" << ID << endl;
+    cout << "이름 :" << Name << endl;
+    cout << "전화번호 :" << Phone << endl;
+    cout << "비밀번호 :" << Password << endl;
     Sleep(3000);
 }
 
@@ -342,8 +427,10 @@ void User::displayCustomerTable() {
 }
 
 void User::UserFunction() {
+    GetUserInfo();
     system("cls");
-        cout << "---------------환영합니다!" << UserName << "님!---------------" << "\n";
+    cout << "---------------환영합니다!" << Name << "님!---------------" << "\n";
+    cout << "0. 계좌 생성" <<endl;
     cout << "1. 예금 입금" << endl;
     cout << "2. 예금 출금" << endl;
     cout << "3. 계좌 이체" << endl;
@@ -356,6 +443,8 @@ void User::UserFunction() {
     cin >> UserMenuNum;
 
     switch (UserMenuNum) {
+    case 0:
+        OpenAccount(); break;//계좌 개설
     case 1:
         deposit();  break; //예금 입금
     case 2:
@@ -455,7 +544,7 @@ int main() {
         fprintf(stderr, "Mysql query error:%s", mysql_error(&Conn));
         return 1;
     }
-
+    
     //콘솔창 크기 및 색상 불러오기
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     system("mode con: cols=100 lines=50");
@@ -487,6 +576,9 @@ int main() {
         while (1) {
             if (MemberNo != "NULL") {
                 user.UserFunction();
+            }
+            else {
+                break;
             }
         }
         

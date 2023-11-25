@@ -30,7 +30,7 @@ void Login::login()
     mysql_init(&Conn); // MySQL 정보 초기화
 
     // 데이터베이스와 연결
-    ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "0923", "cs_bank", 3306, (char*)NULL, 0);
+    ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "1q2w3e4r!", "cs_bank", 3306, (char*)NULL, 0);
 
     // 연결 결과 확인. null일 경우 실패
     if (ConnPtr == NULL) {
@@ -145,7 +145,7 @@ void SignUp::signup() {
     mysql_init(&Conn); // MySQL 정보 초기화
 
     // 데이터베이스와 연결
-    MYSQL* ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "0923", "cs_bank", 3306, (char*)NULL, 0);
+    MYSQL* ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "1q2w3e4r!", "cs_bank", 3306, (char*)NULL, 0);
 
     // 연결 결과 확인. null일 경우 실패
     if (ConnPtr == NULL) {
@@ -274,7 +274,7 @@ public:
 
 };
 void User::GetUserInfo() {
-    string whoLoginquery = "SELECT ID,Name,Phone FROM cs_bank.customer_table WHERE No = '" + MemberNo + "'";
+    string whoLoginquery = "SELECT ID,Name,Phone,Password FROM cs_bank.customer_table WHERE No = '" + MemberNo + "'";
     if (mysql_query(&Conn, whoLoginquery.c_str()) == 0) {
         MYSQL_RES* result = mysql_store_result(&Conn);
         if (result != NULL) {
@@ -368,17 +368,44 @@ void User::IsHaveAccount() {
 }
 
 void User::deposit() {
+    //문제점 1 : 입금 계좌 사용자명 출력. (현재 계좌 명 출력, 만약 사용자명 출력 원하면 이중 쿼리 사용해야함)
+    //문제점 2 : 오류 메시지 수정(ex 계좌 번호 잘못 입력시)
+    int DepositAccount;
+    cout << "입금 하실 계좌를 입력하세요. >> ";
+    cin >> DepositAccount;
+
+    string AccountName;
+    string DepositQuery = "SELECT AccountName FROM account_table WHERE AccountNumber = '" + to_string(DepositAccount) + "'";
+    if (mysql_query(&Conn, DepositQuery.c_str()) == 0) {
+        MYSQL_RES* result = mysql_store_result(&Conn);
+        if (result != NULL) {
+            MYSQL_ROW row = mysql_fetch_row(result);
+            if (row != NULL) {
+                AccountName = row[0];
+            }
+        }
+    }
+    else {
+        cout << "계좌가 존재하지 않습니다.\n 계좌 번호 재확인 바랍니다!";
+        Sleep(3000);
+        UserFunction();
+    }
+    cout << "입금하시는 계좌명이 "<<AccountName<<"이 맞으신가요? <Yes/No>";
+    string AccountNameCheck;
+    cin >> AccountNameCheck;
+    if (AccountNameCheck == "No" || AccountNameCheck == "NO") {
+        cout << "계좌 번호 재확인 바랍니다!";
+        Sleep(3000);
+        UserFunction();
+    }
+
     int InputDeposit;
     cout << "입금 하실 금액을 입력하세요. >> ";
     cin >> InputDeposit;
 
-    //SQL안전모드 해제
-    string safeoff = "SET SQL_SAFE_UPDATES = 0;";
-    mysql_query(&Conn, safeoff.c_str());
-
-    string updateQuery = "UPDATE customer_table SET 잔액 = 잔액+'" + to_string(InputDeposit) + "' WHERE No = '" + MemberNo + "'";
+    string updateQuery = "UPDATE account_table SET Balance = Balance+'" + to_string(InputDeposit) + "' WHERE AccountNumber = '" + to_string(DepositAccount) + "'";
     if (mysql_query(&Conn, updateQuery.c_str()) == 0) {
-        cout << "업데이트가 성공적으로 수행되었습니다.";
+        cout << "성공적으로 입금이 완료되었습니다.";
         Sleep(3000);
     }
     else {
@@ -386,12 +413,85 @@ void User::deposit() {
         Sleep(3000);
     }
 
-    string safeon = "SET SQL_SAFE_UPDATES = 1;";
-    mysql_query(&Conn, safeon.c_str());
 }
 
 void User::withdraw() {
+    //문제점 1 : 본인 계좌가 아니여도 출금됨. -> 계좌 비밀번호 생성? + 사용자 아이디로 확인
+    //문제점 2 : 거래 후 잔액 표기
+    //문제점 3 : 오류 메시지 수정(ex 계좌 번호 잘못 입력시)
+    int WithdrawAccount;
+    cout << "출금 하실 계좌 번호를 입력하세요. >> ";
+    cin >> WithdrawAccount;
 
+    //출금 계좌명 불러오는 쿼리
+    string AccountName;
+    string AccountNameQuery = "SELECT AccountName FROM account_table WHERE AccountNumber = '" + to_string(WithdrawAccount) + "'";
+    if (mysql_query(&Conn, AccountNameQuery.c_str()) == 0) {
+        MYSQL_RES* result = mysql_store_result(&Conn);
+        if (result != NULL) {
+            MYSQL_ROW row = mysql_fetch_row(result);
+            if (row != NULL) {
+                AccountName = row[0];
+            }
+        }
+    }
+
+    //계좌가 본인 명의인지 확인하는 쿼리
+    string AccountID;
+    string AccountIDQuery = "SELECT ID FROM account_table WHERE AccountNumber = '" + to_string(WithdrawAccount) + "'";
+    if (mysql_query(&Conn, AccountIDQuery.c_str()) == 0) {
+        MYSQL_RES* result = mysql_store_result(&Conn);
+        if (result != NULL) {
+            MYSQL_ROW row = mysql_fetch_row(result);
+            if (row != NULL) {
+                AccountID = row[0];
+            }
+        }
+    }
+    else {
+        cout << "계좌가 존재하지 않습니다.\n 계좌 번호 재확인 바랍니다!";
+        Sleep(3000);
+        UserFunction();
+    }
+
+    //만약 로그인된 아이디와 입력받은 계좌번호의 아이디가 다를 경우
+    if (AccountID != ID) {
+        cout << "출금하려는 계좌가 본인 명의가 아닙니다.\n 계좌 확인을 다시 해주세요.";
+        Sleep(3000);
+        UserFunction();
+    }
+
+    cout << "출금하시는 계좌명이 " << AccountName << "이 맞으신가요? <Yes/No>";
+    string AccountNameCheck;
+    cin >> AccountNameCheck;
+    if (AccountNameCheck == "No" || AccountNameCheck == "NO") {
+        cout << "계좌 번호 재확인 바랍니다!";
+        Sleep(3000);
+        UserFunction();
+    }
+    string checkPW;
+    cout << "사용자 비밀번호를 입력하세요. >>";
+    cin >> checkPW;
+    //사용자 비밀번호와 입력 비밀번호가 다를 경우
+    if (checkPW != Password) {
+        cout << "비밀번호 재확인 바랍니다!";
+        Sleep(3000);
+        UserFunction();
+    }
+
+    int InputWithdraw;
+    cout << "출금 하실 금액을 입력하세요. >> ";
+    cin >> InputWithdraw;
+
+    string updateQuery = "UPDATE account_table SET Balance = Balance-'" + to_string(InputWithdraw) + "' WHERE AccountNumber = '" + to_string(WithdrawAccount) + "'";
+    if (mysql_query(&Conn, updateQuery.c_str()) == 0) {
+        cout << "성공적으로 출금이 완료되었습니다.";
+        Sleep(3000);
+    }
+    else {
+        cout << "업데이트를 수행하는 동안 오류가 발생했습니다.";
+        Sleep(3000);
+    }
 }
 
 void User::transfer() {
@@ -401,6 +501,7 @@ void User::transfer() {
 
 void User::checkmyInfo() {
     //UserId, UserName, UserPhone, UserPassword, UserAccountNumber
+    //문제점 1 : 계좌 여러개 출력 및 계좌 잔액 표기
     cout << "ID :" << ID << endl;
     cout << "이름 :" << Name << endl;
     cout << "전화번호 :" << Phone << endl;
@@ -472,6 +573,7 @@ void User::UserFunction() {
         }
         else {
             cout << "잘못된 비밀번호입니다. 관리자 권한이 없습니다.\n";
+            Sleep(1000);
         }
         break;
     }
@@ -537,7 +639,7 @@ int main() {
     mysql_init(&Conn); // MySQL 정보 초기화
 
     // 데이터베이스와 연결
-    ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "0923", "cs_bank", 3306, (char*)NULL, 0);
+    ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "1q2w3e4r!", "cs_bank", 3306, (char*)NULL, 0);
 
     // 연결 결과 확인. null일 경우 실패
     if (ConnPtr == NULL) {
@@ -563,8 +665,8 @@ int main() {
         cout << "                ##             ##    ##     ## ######### ##  #### ##  ##                   \n";
         //초록 색상 출력
         SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
-        cout << "               ##    ## ##    ##    ##     ## ##     ## ##   ### ##   ##                  \n";
-        cout << "                ######   ######     ########  ##     ## ##    ## ##    ##                 \n";
+        cout << "                ##    ## ##    ##    ##     ## ##     ## ##   ### ##   ##                  \n";
+        cout << "                 ######   ######     ########  ##     ## ##    ## ##    ##                 \n";
         cout << "\n\n\n\n";
         //검정 색상 출력
         SetConsoleTextAttribute(hConsole, 15);

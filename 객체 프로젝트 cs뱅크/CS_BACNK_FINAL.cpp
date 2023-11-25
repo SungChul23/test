@@ -15,6 +15,22 @@ MYSQL_ROW Row;         // 쿼리 성공시 결과로 나온 행의 정보를 담
 int Stat;              // 쿼리 요청 후 결과 (성공, 실패)
 string MemberNo = "NULL";
 
+void end() {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    // 하늘 색상 출력
+    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+    cout << "           #### ##  ###  ##    ##     ###  ##  ##  ###           ##  ##    ## ##   ##  ###\n";
+    cout << "           # ## ##   ##  ##     ##      ## ##  ##  ##            ##  ##   ##   ##  ##   ##\n";
+    cout << "             ##      ##  ##   ## ##    # ## #  ## ##             ##  ##   ##   ##  ##   ##\n";
+    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+    cout << "             ##      ## ###   ##  ##   ## ##   ## ##              ## ##   ##   ##  ##   ##\n";
+    cout << "             ##      ##  ##   ## ###   ##  ##  ## ###              ##     ##   ##  ##   ##\n";
+    cout << "             ##      ##  ##   ##  ##   ##  ##  ##  ##              ##     ##   ##  ##   ##\n";
+    cout << "            ####    ###  ##  ###  ##  ###  ##  ##  ###             ##      ## ##    ## ##\n";
+    cout << "\n\n\n\n";
+    // 흰색으로 설정하여 다음 출력이 흰색으로 나타나도록 함
+    SetConsoleTextAttribute(hConsole, 15);
+}
 
 /////////////////////////////////////////////////로그인 클래스//////////////////////////////////////////
 class Login {
@@ -110,10 +126,12 @@ void Login::login()
                     //프로그램 종료
                     cout << "\n";
                     cout << "사유 : 로그인 5회 실패" << endl;
+                    cout << "\n\n\n\n";
+                    end();
                     exit(0);
 
                 }
-
+                
             }
         }
         else {
@@ -154,7 +172,22 @@ void SignUp::signup() {
     }
 
     system("cls");
-    cout << "---------------회원가입---------------" << "\n";
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    // 하늘 색상 출력
+    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+    std::cout << "\n\n\n";
+    cout << "                ## ##     ####    ## ##   ###  ##           ##  ###  ### ##   \n";
+    cout << "               ##   ##     ##    ##   ##    ## ##           ##   ##   ##  ##  \n";
+    cout << "               ####        ##    ##        # ## #           ##   ##   ##  ##  \n";
+    cout << "                #####      ##    ##  ###   ## ##            ##   ##   ##  ##  \n";
+    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+    cout << "                   ###     ##    ##   ##   ##  ##           ##   ##   ## ##   \n";
+    cout << "               ##   ##     ##    ##   ##   ##  ##           ##   ##   ##      \n";
+    cout << "                ## ##     ####    ## ##   ###  ##            ## ##   ####     \n";
+    cout << "\n\n\n\n";
+    // 흰색으로 설정하여 다음 출력이 흰색으로 나타나도록 함
+    SetConsoleTextAttribute(hConsole, 15);
+    cout << "           ================================회원가입================================                  \n\n\n\n";
 
     while (1) {
         cout << "\n";
@@ -578,7 +611,8 @@ void User::UserFunction() {
         break;
     }
     case 7:
-        cout << "프로그램을 종료합니다" << endl; // 프로그램 종료 
+        cout << "프로그램을 종료합니다" << endl; // 프로그램 종료
+        end();
         exit(0);
     default:
         system("cls");
@@ -616,6 +650,7 @@ void Start::start() {
         signup();  break;
     case 3:
         cout << "프로그램을 종료합니다" << endl;
+        end();
         exit(0);
     default:
         system("cls");
@@ -633,6 +668,7 @@ void Start::start() {
 
 int main() {
     system("chcp 65001");
+    system("title CS BANK");
     User user; //User 클래스의 객체 선언
     Start customer; //Start 클래스의 객체 선언
 
@@ -689,5 +725,6 @@ int main() {
 
     mysql_free_result(Result);// MySQL C API에서 사용한 메모리를 해제하는 함수
     mysql_close(ConnPtr); // MySQL 데이터베이스 연결을 닫는 함수
+    end();
     return 0;
 }

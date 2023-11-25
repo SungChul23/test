@@ -30,7 +30,7 @@ void Login::login()
     mysql_init(&Conn); // MySQL 정보 초기화
 
     // 데이터베이스와 연결
-    ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "1q2w3e4r!", "cs_bank", 3306, (char*)NULL, 0);
+    ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "0923", "cs_bank", 3306, (char*)NULL, 0);
 
     // 연결 결과 확인. null일 경우 실패
     if (ConnPtr == NULL) {
@@ -132,12 +132,11 @@ void Login::login()
 ////////////////////////////////////////////////회원가입 클래스//////////////////////////////////////////
 class SignUp {
 public:
-    string ID, PW, NAME;
-    int PhoneNumber = 0;
+    string ID, PW, NAME, confirmPW; //confirmPW : 비밀번호를 한번더 치게 하기위한 변수
+    string PhoneNumber;
     string AcccountNumber;
 protected:
     void signup();
-
 };
 
 void SignUp::signup() {
@@ -146,7 +145,7 @@ void SignUp::signup() {
     mysql_init(&Conn); // MySQL 정보 초기화
 
     // 데이터베이스와 연결
-    MYSQL* ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "1q2w3e4r!", "cs_bank", 3306, (char*)NULL, 0);
+    MYSQL* ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "0923", "cs_bank", 3306, (char*)NULL, 0);
 
     // 연결 결과 확인. null일 경우 실패
     if (ConnPtr == NULL) {
@@ -191,22 +190,32 @@ void SignUp::signup() {
         cout << "사용하실 비밀번호를 입력하세요. (숫자 4자리) >> ";
         cin >> PW;
 
-        // 두 번 입력
-        cout << "\n";
+        // 비밀번호 확인
         cout << "비밀번호를 다시 입력하세요. >> ";
-        string confirmPW;
         cin >> confirmPW;
 
-        if (PW == confirmPW) {
-            break;
+        while (PW != confirmPW) {
+            cout << "비밀번호가 일치하지 않습니다. 다시 입력해주세요.\n";
+
+            // 다시 입력 받기
+            cout << "\n";
+            cout << "사용하실 비밀번호를 입력하세요. (숫자 4자리) >> ";
+            cin >> PW;
+
+            cout << "비밀번호를 다시 입력하세요. >> ";
+            cin >> confirmPW;
         }
-        cout << "비밀번호가 일치하지 않습니다. 다시 입력해주세요.\n";
+
+        cout << "비밀번호가 설정되었습니다!.\n";
+
+        break; 
     }
 
     cout << "가입을 진심으로 환영합니다!!!\n";
     Sleep(3000);
     //가입 인원 판별 및 No값 삽입
-    int No=0;
+
+    int No = 0;
     string AccountCountQuery = "SELECT COUNT(*) FROM customer_table";
     if (mysql_query(&Conn, AccountCountQuery.c_str()) != 0) {
         fprintf(stderr, "SQL 문 실행 오류: %s\n", mysql_error(&Conn));
@@ -216,7 +225,7 @@ void SignUp::signup() {
         MYSQL_ROW row = mysql_fetch_row(result);
         if (row != NULL) {
             if (row != NULL) {
-                No = atoi(row[0]);
+                No = atoi(row[0]); // atoi = 문자열을 숫자로
             }
             mysql_free_result(result);
         }
@@ -224,14 +233,12 @@ void SignUp::signup() {
     //가입 인원 +1 =No
     No += 1;
     // 회원 정보를 데이터베이스에 삽입하기 위한 SQL 쿼리 생성 및 실행
-    string insertQuery = "INSERT INTO `cs_bank`.`customer_table` (`No`, `ID`, `Name`, `Phone`, `Password`) VALUES ('" + to_string(No) + "','" + ID + "', '" + NAME + "',   '" + to_string(PhoneNumber) + "'  , '" + PW + "')";
+    string insertQuery = "INSERT INTO `cs_bank`.`customer_table` (`No`, `ID`, `Name`, `Phone`, `Password`) VALUES ('" + to_string(No) + "','" + ID + "', '" + NAME + "',  '" + PhoneNumber + "'  , '" + PW + "')";
 
     if (mysql_query(&Conn, insertQuery.c_str()) != 0) {
         fprintf(stderr, "Mysql query error:%s", mysql_error(&Conn));
     }
 
-    // MySQL 연결 해제
-    //mysql_close(&Conn);
 }
 
 ////////////////////////////////스타트 클래스/////////////////////
@@ -288,7 +295,7 @@ void User::OpenAccount() {
     string CheckPhone;
     string agree;
     cout << "계좌 개설 페이지입니다.\n";
-    cout << "본인 확인을 위해 전화번호를 입력하세요.\n";
+    cout << "본인 확인을 위해 전화번호를 입력하세요. >> ";
     cin >> CheckPhone;
 
     if (Phone != CheckPhone) {
@@ -313,7 +320,7 @@ void User::OpenAccount() {
     while (1) {
         //계좌번호 랜덤 생성
         srand(time(NULL));
-        randomNumber= 10000000 + rand() % (99999999 - 10000000 + 1);
+        randomNumber = 10000000 + rand() % (99999999 - 10000000 + 1);
         //계좌번호 중복 확인
         string AccountCheckQuery = "SELECT ID FROM account_table WHERE ID = '" + to_string(randomNumber) + "'";
         mysql_query(&Conn, AccountCheckQuery.c_str());
@@ -344,7 +351,7 @@ void User::OpenAccount() {
     //계좌 개수 +1
     accountCount += 1;
     //계좌 이름
-    string accountName="cs제일계좌";
+    string accountName = "cs제일계좌";
     accountName += to_string(accountCount);
     // 회원 정보를 데이터베이스에 삽입하기 위한 SQL 쿼리 생성 및 실행
     string insertQuery = "INSERT INTO `cs_bank`.`account_table` (`ID`, `AccountName`, `AccountNumber`, `Balance`) VALUES ('" + ID + "', '" + accountName + "',   '" + to_string(randomNumber) + "'  , '" + to_string(0) + "')";
@@ -392,9 +399,6 @@ void User::transfer() {
 }
 
 
-
-
-
 void User::checkmyInfo() {
     //UserId, UserName, UserPhone, UserPassword, UserAccountNumber
     cout << "ID :" << ID << endl;
@@ -421,7 +425,7 @@ void User::displayCustomerTable() {
     cout << "Customer Table:\n";
     while ((Row = mysql_fetch_row(Result)) != NULL)
     {
-        cout << "ID: " << Row[0] << ", Name: " << Row[1] << ", PhoneNumber: " << Row[2] << ", Password: " << Row[3] << ", ACCOUNTNUMBER: " << Row[4] << "\n";
+        cout << "ID: " << Row[0] << ", Name: " << Row[1] << ", Phone " << Row[2] << ", Password: " << Row[3] << ", ACCOUNTNUMBER: " << Row[4] << "\n";
     }
     Sleep(3000);
 }
@@ -429,8 +433,9 @@ void User::displayCustomerTable() {
 void User::UserFunction() {
     GetUserInfo();
     system("cls");
+    
     cout << "---------------환영합니다!" << Name << "님!---------------" << "\n";
-    cout << "0. 계좌 생성" <<endl;
+    cout << "0. 계좌 생성" << endl;
     cout << "1. 예금 입금" << endl;
     cout << "2. 예금 출금" << endl;
     cout << "3. 계좌 이체" << endl;
@@ -470,14 +475,9 @@ void User::UserFunction() {
         }
         break;
     }
-
-
-
     case 7:
         cout << "프로그램을 종료합니다" << endl; // 프로그램 종료 
         exit(0);
-    case 9:
-        checkmyInfo(); break;
     default:
         system("cls");
         cout << "잘못된 입력입니다. 다시 입력해주세요.\n";
@@ -537,14 +537,14 @@ int main() {
     mysql_init(&Conn); // MySQL 정보 초기화
 
     // 데이터베이스와 연결
-    ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "1q2w3e4r!", "cs_bank", 3306, (char*)NULL, 0);
+    ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "0923", "cs_bank", 3306, (char*)NULL, 0);
 
     // 연결 결과 확인. null일 경우 실패
     if (ConnPtr == NULL) {
         fprintf(stderr, "Mysql query error:%s", mysql_error(&Conn));
         return 1;
     }
-    
+
     //콘솔창 크기 및 색상 불러오기
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     system("mode con: cols=100 lines=50");
@@ -581,7 +581,7 @@ int main() {
                 break;
             }
         }
-        
+
 
     }
 

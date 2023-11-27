@@ -1,18 +1,20 @@
-#include <iostream>
-#include <mysql.h>  // 추가: mysql.h 포함
-#include<string>
-#include <sstream> //stringstream 사용을 위한 헤더
-#include <Windows.h>
-#include <cstdlib> // exit 함수를 사용하기 위한 헤더
-#include <ctime> //랜덤을 위한 헤더
+#include <iostream> //입력 및 출력 작업을 다루는 입출력 스트림 헤더
+#include <mysql.h>  //MySQL 데이터베이스 연결을 위한 헤더 파일
+#include <string>   //C++에서 문자열 조작을 위한 헤더 파일
+#include <Windows.h> // Windows API 함수를 위한 헤더 파일
+#include <cstdlib>  // exit 함수를 사용하기 위한 헤더
+        //랜덤을 위한 헤더
 #include <iomanip>  // setw 헤더 추가
 
 using namespace std;
 
-MYSQL Conn;           // MySQL 정보 담을 구조체
-MYSQL* ConnPtr = NULL; // MySQL 핸들
-MYSQL_RES* Result;     // 쿼리 성공시 결과를 담는 구조체 포인터
-MYSQL_ROW Row;         // 쿼리 성공시 결과로 나온 행의 정보를 담는 구조체
+MYSQL Conn;                              // MySQL 정보 담을 구조체
+MYSQL* ConnPtr = NULL;                  // MySQL 핸들
+MYSQL_RES* Result;                      // 쿼리 성공시 결과를 담는 구조체 포인터
+MYSQL_ROW Row;                  // 쿼리 성공시 결과로 나온 행의 정보를 담는 구조체
+
+
+
 int Stat;              // 쿼리 요청 후 결과 (성공, 실패)
 string MemberNo = "NULL"; // 회원 번호를 나타내는 Member No 변수
 
@@ -278,7 +280,8 @@ void SignUp::signup() {
 
     // 고객 테이블의 레코드 개수를 가져오기 위한 SQL 쿼리 생성
     string AccountCountQuery = "SELECT COUNT(*) FROM customer_table";
-
+    //고객 테이블에 있는 모든 칼럼을 검색해주세요
+    
     // SQL 쿼리 실행
     if (mysql_query(&Conn, AccountCountQuery.c_str()) != 0) {
         // SQL 쿼리 실행 중 오류 발생 시 오류 메시지 출력
@@ -290,7 +293,7 @@ void SignUp::signup() {
 
         // 결과 행 가져오기
         MYSQL_ROW row = mysql_fetch_row(result);
-
+        
         // 결과 행이 존재하는 경우
         if (row != NULL) {
             // 레코드 개수를 정수로 변환하여 No 변수에 저장
@@ -305,6 +308,7 @@ void SignUp::signup() {
 
     // 회원 정보를 데이터베이스에 삽입하기 위한 SQL 쿼리 생성 및 실행
     string insertQuery = "INSERT INTO `cs_bank`.`customer_table` (`No`, `ID`, `Name`, `Phone`, `Password`) VALUES ('" + to_string(No) + "','" + ID + "', '" + NAME + "',  '" + PhoneNumber + "'  , '" + PW + "')";
+    //DBd인 cs_bank 에 있는 고객 테이블의 `No`, `ID`, `Name`, `Phone`, `Password` 칼럼에 순서대로 삽입해주세요
 
     if (mysql_query(&Conn, insertQuery.c_str()) != 0) {
         fprintf(stderr, "Mysql query error:%s", mysql_error(&Conn));
@@ -399,7 +403,7 @@ void User::OpenAccount() //계좌 개설
     cout << "\n";
     cout << "보이스피싱 등 전기 통신 금융사기가 급증함에 따라, 고객님의 금융사기 피해를 사전에 예방하고 소중한 자산을 보호하고자 합니다.";
     cout << "\n";
-    cout << "계좌 개설 목적이 본인 사용이 맞으신가요?\n< Yes / NO > >> ";
+    cout << "계좌 개설 목적이 본인 사용이 맞으신가요? < Yes / NO > >> ";
     cin >> agree;
     if (agree == "No" || agree == "NO") {
         cout << "관리자에게 문의바랍니다. \n";
@@ -467,7 +471,7 @@ void User::OpenAccount() //계좌 개설
     }
 
     cout << "계좌 개설을 축하합니다";
-    Sleep(3000);
+    Sleep(2000);
 }
 
 void User::IsHaveAccount() //계좌 여부
@@ -539,7 +543,8 @@ void User::deposit() //입금
     string AccountName;
     string DepositQuery = "SELECT AccountName FROM account_table WHERE AccountNumber = '" + to_string(DepositAccount) + "'";
     //계좌 테이블에서 입력받은 DepositAccount에 AccountName를 조회해주세요
-
+    
+    //쿼리 실행 및 결과 저장
     if (mysql_query(&Conn, DepositQuery.c_str()) == 0) {
         MYSQL_RES* result = mysql_store_result(&Conn);
         if (result != NULL) {
@@ -571,13 +576,14 @@ void User::deposit() //입금
     cin >> InputDeposit;
 
     string updateQuery = "UPDATE account_table SET Balance = Balance+'" + to_string(InputDeposit) + "' WHERE AccountNumber = '" + to_string(DepositAccount) + "'";
-    //AccountNumber에 입력 받은 DepositAccount에  InputDeposit에서 입력 받은 잔액 만큼 업데이트 해주세요 계좌 테이블에서
+    //AccountNumber가 입력 받은DepositAccount인 계좌테이블에서 입력 받은 금액을 업데이트 해주세요
     if (mysql_query(&Conn, updateQuery.c_str()) == 0) {
         cout << "성공적으로 입금이 완료되었습니다.";
 
         Sleep(3000);
     }
-    else {
+    else 
+    {
         cout << "업데이트를 수행하는 동안 오류가 발생했습니다.";
         Sleep(3000);
     }
@@ -1082,7 +1088,9 @@ void User::UserFunction() {
     }
     case 7:
         cout << "프로그램을 종료합니다" << endl; // 프로그램 종료
+        cout << "\n";
         cout << "이용해 주셔서 감사합니다" << endl;
+        cout << "\n";
         end();
         exit(0);
 
@@ -1124,7 +1132,9 @@ void Start::start() {
         signup();  break;
     case 3:
         cout << "프로그램을 종료합니다" << endl;
+        cout << "\n";
         cout << "이용해 주셔서 감사합니다" << endl;
+        cout << "\n";
         end();
         exit(0);
     default:
@@ -1143,12 +1153,12 @@ void Start::start() {
 
 int main() 
 {
-    system("chcp 65001");
+    //system("chcp 65001");
     system("title CS BANK"); //CS BANK로 프로그램 명 변경
     User user; //User 클래스의 객체 선언
     Start customer; //Start 클래스의 객체 선언
 
-    mysql_init(&Conn); // MySQL 정보 초기화
+    mysql_init(&Conn); // MySQL 정보 초기화  
 
     // 데이터베이스와 연결
     ConnPtr = mysql_real_connect(&Conn, "localhost", "root", "0923", "cs_bank", 3306, (char*)NULL, 0);

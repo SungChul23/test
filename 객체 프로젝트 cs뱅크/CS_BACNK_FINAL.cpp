@@ -3,7 +3,7 @@
 #include <string>   //C++에서 문자열 조작을 위한 헤더 파일
 #include <Windows.h> // Windows API 함수를 위한 헤더 파일
 #include <cstdlib>  // exit 함수를 사용하기 위한 헤더
-        //랜덤을 위한 헤더
+#include <iomanip>  //랜덤을 위한 헤더
 #include <iomanip>  // setw 헤더 추가
 
 using namespace std;
@@ -576,7 +576,7 @@ void User::deposit() //입금
     cin >> InputDeposit;
 
     string updateQuery = "UPDATE account_table SET Balance = Balance+'" + to_string(InputDeposit) + "' WHERE AccountNumber = '" + to_string(DepositAccount) + "'";
-    //AccountNumber가 입력 받은DepositAccount인 계좌테이블에서 입력 받은 금액을 업데이트 해주세요
+    //AccountNumber가 입력 받은DepositAccount인 계좌테이블에서 입력 받은 금액을 업데이트 해주세요 
     if (mysql_query(&Conn, updateQuery.c_str()) == 0) {
         cout << "성공적으로 입금이 완료되었습니다.";
 
